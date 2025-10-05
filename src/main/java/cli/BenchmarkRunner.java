@@ -6,6 +6,8 @@ import metrics.PerformanceTracker;
 import java.io.IOException;
 import java.util.Random;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Command-line interface for benchmarking MinHeap operations.
@@ -37,14 +39,24 @@ public class BenchmarkRunner {
         runScalabilityTest();
     }
 
+    private static int[] generateUniqueRandomArray(int size, Random rand) {
+        Set<Integer> uniqueValues = new HashSet<>();
+        while (uniqueValues.size() < size) {
+            uniqueValues.add(rand.nextInt(size * 100));
+        }
+        return uniqueValues.stream().mapToInt(Integer::intValue).toArray();
+    }
+
     private static void benchmarkInsert(int n) {
         MinHeap heap = new MinHeap(n);
         PerformanceTracker tracker = heap.getTracker();
         Random rand = new Random(42);
 
+        int[] values = generateUniqueRandomArray(n, rand);
+
         tracker.startTimer();
         for (int i = 0; i < n; i++) {
-            heap.insert(rand.nextInt(n * 10));
+            heap.insert(values[i]);
         }
         tracker.stopTimer();
 
@@ -59,10 +71,7 @@ public class BenchmarkRunner {
     private static void benchmarkExtractMin(int n) {
         // Build heap first
         Random rand = new Random(42);
-        int[] array = new int[n];
-        for (int i = 0; i < n; i++) {
-            array[i] = rand.nextInt(n * 10);
-        }
+        int[] array = generateUniqueRandomArray(n, rand);
         MinHeap heap = new MinHeap(array);
 
         PerformanceTracker tracker = heap.getTracker();
@@ -100,7 +109,9 @@ public class BenchmarkRunner {
             int oldVal = (rand.nextInt(n / 2) + n / 2) * 10;
             int newVal = oldVal - rand.nextInt(oldVal);
             try {
-                heap.decreaseKey(oldVal, newVal);
+                if (heap.contains(oldVal) && !heap.contains(newVal) && newVal >= 0) {
+                    heap.decreaseKey(oldVal, newVal);
+                }
             } catch (Exception e) {
                 // Skip if value already used
             }
@@ -109,23 +120,16 @@ public class BenchmarkRunner {
 
         System.out.printf("Decrease-Key (%d operations):%n", operations);
         System.out.printf("  Time: %.3f ms%n", tracker.getElapsedTimeMillis());
-        System.out.printf("  Comparisons: %,d (avg: %.2f per operation)%n",
-                tracker.getComparisons(), (double)tracker.getComparisons() / operations);
-        System.out.printf("  Swaps: %,d (avg: %.2f per operation)%n",
-                tracker.getSwaps(), (double)tracker.getSwaps() / operations);
+        System.out.printf("  Comparisons: %,d%n", tracker.getComparisons());
+        System.out.printf("  Swaps: %,d%n", tracker.getSwaps());
     }
 
     private static void benchmarkMerge(int n) {
         Random rand = new Random(42);
 
         // Create two heaps of size n/2
-        int[] array1 = new int[n / 2];
-        int[] array2 = new int[n / 2];
-
-        for (int i = 0; i < n / 2; i++) {
-            array1[i] = rand.nextInt(n * 5);
-            array2[i] = rand.nextInt(n * 5) + n * 5;
-        }
+        int[] array1 = generateUniqueRandomArray(n / 2, rand);
+        int[] array2 = generateUniqueRandomArray(n / 2, rand);
 
         MinHeap heap1 = new MinHeap(array1);
         MinHeap heap2 = new MinHeap(array2);
@@ -142,10 +146,7 @@ public class BenchmarkRunner {
 
     private static void benchmarkBuildHeap(int n) {
         Random rand = new Random(42);
-        int[] array = new int[n];
-        for (int i = 0; i < n; i++) {
-            array[i] = rand.nextInt(n * 10);
-        }
+        int[] array = generateUniqueRandomArray(n, rand);
 
         long startTime = System.nanoTime();
         MinHeap heap = new MinHeap(array);
@@ -177,9 +178,11 @@ public class BenchmarkRunner {
                 PerformanceTracker tracker = heap.getTracker();
                 Random rand = new Random(42);
 
+                int[] values = generateUniqueRandomArray(size, rand);
+
                 tracker.startTimer();
                 for (int i = 0; i < size; i++) {
-                    heap.insert(rand.nextInt(size * 10));
+                    heap.insert(values[i]);
                 }
                 tracker.stopTimer();
 
