@@ -446,6 +446,26 @@ class MinHeapTest {
         }
     }
 
+    @ParameterizedTest
+    @ValueSource(ints = {10, 50, 100, 500, 1000})
+    @DisplayName("Parameterized stress test")
+    void testStressWithDifferentSizes(int size) {
+        Random rand = new Random(42);
+        int[] values = new int[size];
+
+        for (int i = 0; i < size; i++) {
+            values[i] = rand.nextInt(10000);
+            heap.insert(values[i]);
+        }
+
+        assertHeapProperty(heap);
+        Arrays.sort(values);
+
+        for (int i = 0; i < size; i++) {
+            assertEquals(values[i], heap.extractMin());
+        }
+    }
+
     // Helper method to verify heap property
     private void assertHeapProperty(MinHeap h) {
         int[] array = h.toArray();
