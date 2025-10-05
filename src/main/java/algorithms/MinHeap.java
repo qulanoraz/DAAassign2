@@ -159,6 +159,43 @@ public class MinHeap {
     }
 
     /**
+     * Decreases the value of a key in the heap.
+     * Time Complexity: O(log n)
+     *
+     * @param oldValue the current value to decrease
+     * @param newValue the new smaller value
+     * @throws IllegalArgumentException if oldValue not in heap or newValue >= oldValue
+     */
+    public void decreaseKey(int oldValue, int newValue) {
+        if (!positionMap.containsKey(oldValue)) {
+            throw new IllegalArgumentException(
+                    "Value not in heap: " + oldValue);
+        }
+
+        if (newValue >= oldValue) {
+            throw new IllegalArgumentException(
+                    "New value must be smaller than old value");
+        }
+
+        if (positionMap.containsKey(newValue)) {
+            throw new IllegalArgumentException(
+                    "New value already exists in heap: " + newValue);
+        }
+
+        int index = positionMap.get(oldValue);
+        tracker.incrementArrayAccesses();
+
+        // Update value and position map
+        heap[index] = newValue;
+        tracker.incrementArrayAccesses();
+        positionMap.remove(oldValue);
+        positionMap.put(newValue, index);
+
+        // Bubble up since value decreased
+        heapifyUp(index);
+    }
+
+    /**
      * Restores heap property by moving element up.
      * Time Complexity: O(log n)
      *
