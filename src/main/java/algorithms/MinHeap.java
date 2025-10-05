@@ -196,6 +196,32 @@ public class MinHeap {
     }
 
     /**
+     * Merges another heap into this heap.
+     * Time Complexity: O(n + m) where n and m are heap sizes
+     * Space Complexity: O(n + m) for the merged heap
+     *
+     * @param other the heap to merge
+     * @return a new heap containing all elements from both heaps
+     */
+    public MinHeap merge(MinHeap other) {
+        if (other == null || other.isEmpty()) {
+            return this.copy();
+        }
+
+        // Create array with combined elements
+        int[] combined = new int[this.size + other.size];
+        tracker.incrementMemoryAllocations();
+
+        // Copy elements from both heaps
+        System.arraycopy(this.heap, 0, combined, 0, this.size);
+        System.arraycopy(other.heap, 0, combined, this.size, other.size);
+        tracker.incrementArrayAccesses(this.size + other.size);
+
+        // Build new heap using O(n) bottom-up construction
+        return new MinHeap(combined);
+    }
+
+    /**
      * Restores heap property by moving element up.
      * Time Complexity: O(log n)
      *
